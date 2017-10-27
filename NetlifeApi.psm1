@@ -48,7 +48,7 @@ function makeApiCall($method, $baseUrl, $route, $data, $username, $password ){
                 throw "Not supporte web method defined: $method"    
             }
         }
-    }catch{
+    }catch {
 
         $statusCode = $_.Exception.Response.StatusCode;
         $statusDescription = $_.Exception.Response.StatusDescription
@@ -67,7 +67,7 @@ function makeApiCall($method, $baseUrl, $route, $data, $username, $password ){
                 throw "Unauthorized access for user $username"
             }
             default{
-                Write-error "Failed to call $url, result:  $statusCode - $statusDescription - with token: $cirrusGlobalToken : $errorContent"    
+                Write-error "Failed to call $url, result:  $statusCode - $statusDescription - Errorcontent: $errorContent"    
                 throw "request ($url) failed with $statusCode for method $method" 
             }
         }
@@ -187,6 +187,59 @@ function Get-NetlifeJob {
     }
 
 }
+
+
+function New-NetlifeJob {
+   <#
+        .SYNOPSIS
+        
+        .DESCRIPTION
+            
+        .EXAMPLES
+           
+    #>
+    [CmdletBinding()]
+       param(
+        [Parameter(Mandatory=$True,Position=1)]
+        [String] $username,
+        [Parameter(Mandatory=$True,Position=2)]
+        [String] $password,
+        [Parameter(Mandatory=$True,Position=3)]
+        [String] $portal,
+        [Parameter(Mandatory=$true)]
+        [String] $name,
+        [Parameter(Mandatory=$true)]
+        [String] $internalName,
+        [Parameter()]
+        [String] $externalId = "",
+        [Parameter()]
+        [String] $jobType = ""
+
+      )
+
+    try{
+       $payload = @{
+            "name" = $name
+            "internal_name" = $internalName   
+       }
+
+       if($externalId -ne ""){
+         $payload.Add("external_id",$externalId);
+       } 
+
+       if($jobType -ne ""){
+         $payload.Add("job_type",$jobType);
+       } 
+
+       $BASEURL = "$portal/api/v1" 
+       makeApiCall "POST" $BASEURL "jobs" $payload $username $password;    
+    }catch {
+       throw "failed to create new job  name='$name', internalname='$internalName', externalId='$externalId'  for portal $portal : $($_.Exception)" 
+    }
+
+}
+
+
 
 function Get-NetlifeJobSubjects {
    <#
@@ -347,7 +400,6 @@ function Get-NetlifePricelistProductPrice {
         [String] $pricelistUuid,
         [Parameter(Mandatory=$true)]
         [String] $productUuid
-
 
       )
 
