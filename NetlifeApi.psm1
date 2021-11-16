@@ -45,7 +45,7 @@ function makeApiCall($method, $baseUrl, $route, $data, $username, $password ){
                 $result = Invoke-WebRequest  -Method Delete -Uri $url -Body  $data -Headers $headers -TimeoutSec $timeoutlimit  -ErrorAction Stop
             }
             default {
-                throw "Not supporte web method defined: $method"    
+                throw "Not supported web method defined: $method"    
             }
         }
     }catch {
@@ -67,15 +67,15 @@ function makeApiCall($method, $baseUrl, $route, $data, $username, $password ){
                 throw "Unauthorized access for user $username"
             }
             default{
-                Write-error "Failed to call $url, result:  $statusCode - $statusDescription - Errorcontent: $errorContent"    
-                throw "request ($url) failed with $statusCode for method $method" 
+                #Write-error "Failed to call $url, result:  $statusCode - $statusDescription - Errorcontent: $errorContent"    
+                throw "Request ($url) failed with $statusCode for method $method : $errorContent" 
             }
         }
     }
 
     Write-Verbose "request finished with status $($result.StatusCode)"
 
-    if($result -ne $null) {
+    if($null -ne $result) {
         Write-Verbose "content: $($result.Content)"    
         $jsonResult = $result.Content |  ConvertFrom-Json 
         if($jsonResult.errorCode -ne $null){
@@ -239,6 +239,144 @@ function New-NetlifeJob {
 
 }
 
+function Get-NetlifeJobActivities {
+   <#
+        .SYNOPSIS
+        
+        .DESCRIPTION
+            
+        .EXAMPLES
+           
+    #>
+    [CmdletBinding()]
+       param(
+        [Parameter(Mandatory=$True,Position=1)]
+        [String] $username,
+        [Parameter(Mandatory=$True,Position=2)]
+        [String] $password,
+        [Parameter(Mandatory=$True,Position=3)]
+        [String] $portal,
+        [Parameter(Mandatory=$true)]
+        [String] $jobUuid
+
+
+      )
+
+    try{
+       $payload = @{}
+       $BASEURL = "$portal/api/v1" 
+       makeApiCall "GET" $BASEURL "jobs/$jobUuid/activities" $payload $username $password;    
+    }catch {
+       throw "failed to get activites $portal : $($_.Exception)" 
+    }
+
+}
+
+function Get-NetlifeJobActivity {
+   <#
+        .SYNOPSIS
+        
+        .DESCRIPTION
+            
+        .EXAMPLES
+           
+    #>
+    [CmdletBinding()]
+       param(
+        [Parameter(Mandatory=$True,Position=1)]
+        [String] $username,
+        [Parameter(Mandatory=$True,Position=2)]
+        [String] $password,
+        [Parameter(Mandatory=$True,Position=3)]
+        [String] $portal,
+        [Parameter(Mandatory=$true)]
+        [String] $jobUuid,
+        [Parameter(Mandatory=$true)]
+        [String] $activityUuid        
+      )
+
+    try{
+       $payload = @{}
+       $BASEURL = "$portal/api/v1" 
+       makeApiCall "GET" $BASEURL "jobs/$jobUuid/activities/$activityUuid" $payload $username $password;    
+    }catch {
+       throw "failed to get portals $portal : $($_.Exception)" 
+    }
+
+}
+
+function Update-NetlifeJobActivity {
+   <#
+        .SYNOPSIS
+        
+        .DESCRIPTION
+            
+        .EXAMPLES
+           
+    #>
+    [CmdletBinding()]
+       param(
+        [Parameter(Mandatory=$True,Position=1)]
+        [String] $username,
+        [Parameter(Mandatory=$True,Position=2)]
+        [String] $password,
+        [Parameter(Mandatory=$True,Position=3)]
+        [String] $portal,
+        [Parameter(Mandatory=$true)]
+        [String] $jobUuid,
+        [Parameter(Mandatory=$true)]
+        [String] $activityUuid,
+        [Parameter(Mandatory=$true)]
+        [String] $starting,
+        [Parameter(Mandatory=$true)]
+        [String] $ending
+      )
+
+    try{
+       $payload = @{}
+       $payload.Add("starting", $starting)
+       $payload.Add("ending", $ending)
+       $BASEURL = "$portal/api/v1" 
+       makeApiCall "PUT" $BASEURL "jobs/$jobUuid/activities/$activityUuid" $payload $username $password;    
+    }catch {
+       throw "failed to get portals $portal : $($_.Exception)" 
+    }
+
+}
+
+
+function Remove-NetlifeJobActivity {
+   <#
+        .SYNOPSIS
+        
+        .DESCRIPTION
+            
+        .EXAMPLES
+           
+    #>
+    [CmdletBinding()]
+       param(
+        [Parameter(Mandatory=$True,Position=1)]
+        [String] $username,
+        [Parameter(Mandatory=$True,Position=2)]
+        [String] $password,
+        [Parameter(Mandatory=$True,Position=3)]
+        [String] $portal,
+        [Parameter(Mandatory=$true)]
+        [String] $jobUuid,
+        [Parameter(Mandatory=$true)]
+        [String] $activityUuid        
+      )
+
+    try{
+       $payload = @{}
+       $BASEURL = "$portal/api/v1" 
+       makeApiCall "DELETE" $BASEURL "jobs/$jobUuid/activities/$activityUuid" $payload $username $password;    
+    }catch {
+       throw "failed to get portals $portal : $($_.Exception)" 
+    }
+
+}
 
 
 function Get-NetlifeJobSubjects {
